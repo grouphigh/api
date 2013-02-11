@@ -19,13 +19,13 @@ import org.apache.commons.io.IOUtils;
 
 /**
  * An implementation of GroupHigh's Stream API.
- * 
+ *
  * @author David Pinto
  */
 public class Stream {
 
     // global constants
-    private static final String ENDPOINT_STREAM = "http://services2.grouphigh.com/v4/stream/";
+    private static final String ENDPOINT_STREAM = "http://services2.grouphigh.com/api/v1/stream/";
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
     /**
@@ -196,6 +196,7 @@ public class Stream {
 
     /**
      * creates a HttpURLConnection object with appropriate headers set
+     *
      * @param endpoint target endpoint
      * @param key account key
      * @param secret account secret
@@ -203,7 +204,7 @@ public class Stream {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      * @throws MalformedURLException
-     * @throws IOException 
+     * @throws IOException
      */
     private static HttpURLConnection connect(String endpoint, String key, String secret) throws NoSuchAlgorithmException, InvalidKeyException, MalformedURLException, IOException {
         // setup endpoint
