@@ -42,7 +42,7 @@ public class Main {
         final String secret = "";  // account secrect
 
         // the choice of keywords is simply to generate a good bit on content
-        final String schema_example = "{\"rules\":[{\"operator\":\"OR\", \"keywords\":[\"political\", \"politics\", \"obama\"]}]}";
+        final String schema_example = "{\"rules\":[{\"operator\":\"OR\", \"keywords\":[\"political\", \"politics\", \"obama\"]}], \"languages\" : [\"fr\"], \"minSEOMozFRMP\" : 6.0}";
         //putSchema("google", example, key, secret);
         //stream(key, secret);
         //deleteSchema("obama", key, secret);
