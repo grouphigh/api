@@ -39,10 +39,10 @@ public class Stream {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      */
-    public static Iterable<BlogPostEvent> stream(String key, String secret) throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeyException {
+    public static Iterable<BlogPostEvent> stream(String key, String secret) throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
         // initialize endpoint
         final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM, key, secret);
-        System.out.println("RT : " + httpConnection.getReadTimeout());
+        validate(httpConnection);
 
         // intialize streams
         final InputStream inputStream = httpConnection.getInputStream();
@@ -97,6 +97,7 @@ public class Stream {
         // populate result
         try {
             final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM + "schemas/", key, secret);
+            validate(httpConnection);
             try (final InputStream inputStream = httpConnection.getInputStream()) {
                 result = IOUtils.toString(inputStream);
             }
@@ -123,6 +124,7 @@ public class Stream {
         // populate result
         try {
             final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM + "schemas/" + URLEncoder.encode(topic, "UTF-8"), key, secret);
+            validate(httpConnection);
             result = IOUtils.toString(httpConnection.getInputStream());
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,6 +152,7 @@ public class Stream {
             final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM + "schemas/" + URLEncoder.encode(topic, "UTF-8"), key, secret);
             httpConnection.setRequestMethod("PUT");
             httpConnection.setDoOutput(true);
+            validate(httpConnection);
 
             try (final OutputStream outputStream = httpConnection.getOutputStream()) {
                 IOUtils.write(schema, outputStream);
@@ -182,7 +185,7 @@ public class Stream {
         try {
             final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM + "schemas/" + URLEncoder.encode(topic, "UTF-8"), key, secret);
             httpConnection.setRequestMethod("DELETE");
-
+            validate(httpConnection);
             try (final InputStream inputStream = httpConnection.getInputStream()) {
                 result = IOUtils.toString(inputStream);
             }
@@ -192,6 +195,13 @@ public class Stream {
 
         // return result
         return result;
+    }
+
+    private static void validate(HttpURLConnection connection) throws Exception {
+        if (connection.getResponseCode() != 200) {
+            System.err.println(connection.getHeaderFields());
+            throw new Exception("Invalid Response Code : " + connection.getResponseCode() + " | " + connection.getResponseMessage());
+        }
     }
 
     /**
