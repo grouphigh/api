@@ -1,9 +1,9 @@
 package com.grouphigh.stream;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -16,6 +16,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * An implementation of GroupHigh's Stream API.
@@ -39,7 +40,7 @@ public class Stream {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      */
-    public static Iterable<BlogPostEvent> stream(String key, String secret) throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
+    public static Iterable<JSONObject> stream(String key, String secret) throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
         // initialize endpoint
         final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM, key, secret);
         validate(httpConnection);
@@ -47,30 +48,27 @@ public class Stream {
         // intialize streams
         final InputStream inputStream = httpConnection.getInputStream();
         //final GZIPInputStream gzip = new GZIPInputStream(inputStream);
-
-        // leverage jackson's json-stream api
-        final JsonFactory jsonFactory = new JsonFactory();
-        final JsonParser jsonParser = jsonFactory.createJsonParser(inputStream);
+        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         // return iterable
-        return new Iterable<BlogPostEvent>() {
+        return new Iterable<JSONObject>() {
             @Override
-            public Iterator<BlogPostEvent> iterator() {
-                return new Iterator<BlogPostEvent>() {
+            public Iterator<JSONObject> iterator() {
+                return new Iterator<JSONObject>() {
                     @Override
                     public boolean hasNext() {
                         return true;
                     }
 
                     @Override
-                    public BlogPostEvent next() {
-                        BlogPostEvent result = null;
+                    public JSONObject next() {
                         try {
-                            result = new BlogPostEvent(jsonParser);
+                            return new JSONObject(bufferedReader.readLine());
                         } catch (Exception e) {
                             e.printStackTrace();
+                            return null;
                         }
-                        return result;
                     }
 
                     @Override
@@ -152,12 +150,12 @@ public class Stream {
             final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM + "schemas/" + URLEncoder.encode(topic, "UTF-8"), key, secret);
             httpConnection.setRequestMethod("PUT");
             httpConnection.setDoOutput(true);
-            validate(httpConnection);
 
             try (final OutputStream outputStream = httpConnection.getOutputStream()) {
                 IOUtils.write(schema, outputStream);
             }
 
+            validate(httpConnection);
             try (final InputStream inputStream = httpConnection.getInputStream()) {
                 result = IOUtils.toString(inputStream);
             }
