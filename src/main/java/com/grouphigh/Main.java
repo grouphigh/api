@@ -1,9 +1,9 @@
 package com.grouphigh;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.grouphigh.stream.BlogPostEvent;
 import com.grouphigh.stream.Stream;
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * Entrypoint for API examples.
@@ -13,11 +13,15 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 
     private static void stream(String key, String secret) throws Exception {
-        for (BlogPostEvent blogPostEvent : Stream.stream(key, secret)) {
-            System.out.println(blogPostEvent.getId_topic() + " = " + blogPostEvent.getTitle());
-            System.out.println("\t" + blogPostEvent.getPublished() + " vs " + blogPostEvent.getTimestamp() + " = " + TimeUnit.MILLISECONDS.toMinutes(blogPostEvent.getTimestamp().getTime() - blogPostEvent.getPublished().getTime()));
-            System.out.println("\t" + blogPostEvent.getBlogs());
-            System.out.println("\t" + blogPostEvent.getLanguage());
+        for (JSONObject json : Stream.stream(key, secret)) {
+            System.out.println("topic : " + json.getString("id_topic"));
+            System.out.println("\ttitle : " + json.getJSONObject("post").getString("title"));
+            System.out.println("\tlanguage : " + json.getJSONObject("post").getString("language"));
+            final JSONArray array = json.getJSONObject("post").getJSONArray("blogs");
+            for (int i = 0; i < array.length(); i++) {
+                final JSONObject blog = array.getJSONObject(i);
+                System.out.println("\t\t" + blog.getString("id") + " ( " + blog.optDouble("seomoz_fmrp") + " )");
+            }
         }
     }
 
@@ -40,12 +44,22 @@ public class Main {
     public static void main(String[] args) throws Exception {
         final String key = "";  // account key
         final String secret = "";  // account secrect
+        
+        // create example schema
+        final JSONObject schema = new JSONObject();
+        schema.put("languages", new JSONArray(Arrays.asList("en", "es", "fr")));
+        schema.put("minSEOMozFRMP", 2.0);
+        schema.put("blogs", new JSONArray(Arrays.asList("http://techcrunch.com/", "http://carrotsncake.com/", "http://www.androidcentral.com/", "http://androidandme.com/", "http://www.engadget.com/")));
+        // add rules
+        final JSONObject rule_or = new JSONObject();
+        rule_or.put("operator", "OR");
+        rule_or.put("keywords", new JSONArray(Arrays.asList("apple", "food")));
+        schema.put("rules", new JSONArray(Arrays.asList(rule_or)));
 
-        // the choice of keywords is simply to generate a good bit on content
-        final String schema_example = "{\"rules\":[{\"operator\":\"OR\", \"keywords\":[\"political\", \"politics\", \"obama\"]}], \"languages\" : [\"fr\"], \"minSEOMozFRMP\" : 6.0}";
-        //putSchema("google", example, key, secret);
-        //stream(key, secret);
-        //deleteSchema("obama", key, secret);
+        //putSchema("example", schema.toString(), key, secret);
+        //getSchema("example", key, secret);
+        //deleteSchema("example", key, secret);
         //getSchemas(key, secret);
+        //stream(key, secret);
     }
 }
