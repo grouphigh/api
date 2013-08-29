@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
+import java.util.zip.GZIPInputStream;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
@@ -47,8 +48,8 @@ public class Stream {
 
         // intialize streams
         final InputStream inputStream = httpConnection.getInputStream();
-        //final GZIPInputStream gzip = new GZIPInputStream(inputStream);
-        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        final GZIPInputStream gzip = new GZIPInputStream(inputStream);
+        final InputStreamReader inputStreamReader = new InputStreamReader(gzip);
         final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         // return iterable
