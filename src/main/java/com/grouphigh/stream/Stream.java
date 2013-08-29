@@ -41,9 +41,9 @@ public class Stream {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      */
-    public static Iterable<JSONObject> stream(String key, String secret) throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
+    public static Iterable<JSONObject> stream(String key, String secret, Long offset) throws MalformedURLException, IOException, NoSuchAlgorithmException, InvalidKeyException, Exception {
         // initialize endpoint
-        final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM, key, secret);
+        final HttpURLConnection httpConnection = connect(ENDPOINT_STREAM + ((offset != null) ? ("?offset=" + offset) : ""), key, secret);
         validate(httpConnection);
 
         // intialize streams
